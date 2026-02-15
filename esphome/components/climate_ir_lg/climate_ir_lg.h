@@ -9,6 +9,8 @@
 namespace esphome {
 namespace climate_ir_lg {
 
+class LgIrDisplayLed;
+
 // Temperature
 const uint8_t TEMP_MIN = 18;  // Celsius
 const uint8_t TEMP_MAX = 30;  // Celsius
@@ -41,6 +43,11 @@ class LgIrClimate : public climate_ir::ClimateIR {
   /// Send a fixed vertical louver position (index 0-5, mapping to VERT_FIX_1 through VERT_FIX_6).
   void send_louver_fixed_vertical_position(size_t index);
 
+  /// Transmit the LIGHT_ON_OFF IR code to toggle the display LED.
+  void send_display_led_toggle();
+
+  void set_display_led(LgIrDisplayLed *display_led) { this->display_led_ = display_led; }
+
   SUB_SELECT(louver_fixed_vertical_position)
 
  protected:
@@ -53,6 +60,7 @@ class LgIrClimate : public climate_ir::ClimateIR {
 
   void calc_checksum_(uint32_t &value);
   void transmit_(uint32_t value);
+  void sync_display_led_();
 
   bool alternative_mode_{false};
   uint32_t header_high_;
@@ -62,6 +70,7 @@ class LgIrClimate : public climate_ir::ClimateIR {
   uint32_t bit_zero_low_;
 
   climate::ClimateMode mode_before_{climate::CLIMATE_MODE_OFF};
+  LgIrDisplayLed *display_led_{nullptr};
 };
 
 }  // namespace climate_ir_lg

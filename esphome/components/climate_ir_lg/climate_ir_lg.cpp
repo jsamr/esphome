@@ -1,4 +1,5 @@
 #include "climate_ir_lg.h"
+#include "lg_ir_display_led.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -121,6 +122,14 @@ void LgIrClimate::setup() {
   if (this->louver_fixed_vertical_position_select_ != nullptr) {
     this->louver_fixed_vertical_position_select_->publish_state(DEFAULT_FIX_INDEX);
   }
+  this->sync_display_led_();
+}
+
+void LgIrClimate::send_display_led_toggle() {
+  uint32_t remote_state = LG_HEADER;
+  remote_state |= CommandSys::HEADER_SYS;
+  remote_state |= CommandSys::LIGHT_ON_OFF;
+  this->transmit_(remote_state);
 }
 
 void LgIrClimate::send_louver_fixed_vertical_position(size_t index) {
@@ -228,6 +237,7 @@ void LgIrClimate::transmit_state() {
   }
 
   this->transmit_(remote_state);
+  this->sync_display_led_();
   this->publish_state();
 }
 
@@ -262,6 +272,11 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
         case CommandSys::OFF:
           this->mode = climate::CLIMATE_MODE_OFF;
           break;
+        case CommandSys::LIGHT_ON_OFF:
+          if (this->display_led_ != nullptr) {
+            this->display_led_->on_receive_display_led_toggle();
+          }
+          return true;
         default:
           return false;
       }
@@ -386,9 +401,18 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
       break;
   }
 
+  this->sync_display_led_();
   this->publish_state();
 
   return true;
+}
+
+void LgIrClimate::sync_display_led_() {
+  if (this->display_led_ != nullptr) {
+    // LG devices always re-enable the screen LED after any command that is not
+    // a power-off request.
+    this->display_led_->set_assumed_state(this->mode != climate::CLIMATE_MODE_OFF);
+  }
 }
 
 void LgIrClimate::transmit_(uint32_t value) {

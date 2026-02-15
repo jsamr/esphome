@@ -1,15 +1,16 @@
 import esphome.codegen as cg
-from esphome.components import climate_ir, select
+from esphome.components import climate_ir, light, select
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
 
-AUTO_LOAD = ["climate_ir", "select"]
+AUTO_LOAD = ["climate_ir", "select", "light"]
 
 climate_ir_lg_ns = cg.esphome_ns.namespace("climate_ir_lg")
 LgIrClimate = climate_ir_lg_ns.class_("LgIrClimate", climate_ir.ClimateIR)
 LgIrLouverVerticalSelect = climate_ir_lg_ns.class_(
     "LgIrLouverVerticalSelect", select.Select
 )
+LgIrDisplayLed = climate_ir_lg_ns.class_("LgIrDisplayLed", light.LightOutput)
 
 CONF_HEADER_HIGH = "header_high"
 CONF_HEADER_LOW = "header_low"
@@ -18,6 +19,7 @@ CONF_BIT_ONE_LOW = "bit_one_low"
 CONF_BIT_ZERO_LOW = "bit_zero_low"
 CONF_ALTERNATIVE_MODE = "alternative_mode"
 CONF_LOUVER_FIXED_VERTICAL_POSITION = "louver_fixed_vertical_position"
+CONF_DISPLAY_LED = "display_led"
 
 SWING_POSITION_OPTIONS = [
     "Lowest",
@@ -50,6 +52,12 @@ CONFIG_SCHEMA = climate_ir.climate_ir_with_receiver_schema(LgIrClimate).extend(
             LgIrLouverVerticalSelect,
             icon="mdi:arrow-expand-vertical",
         ),
+        cv.Optional(CONF_DISPLAY_LED): light.light_schema(
+            LgIrDisplayLed,
+            light.LightType.BINARY,
+            icon="mdi:led-on",
+            default_restore_mode="ALWAYS_ON",
+        ),
     }
 )
 
@@ -71,3 +79,8 @@ async def to_code(config):
         )
         await cg.register_parented(sel, config[CONF_ID])
         cg.add(var.set_louver_fixed_vertical_position_select(sel))
+
+    if display_led_config := config.get(CONF_DISPLAY_LED):
+        display_led_var = await light.new_light(display_led_config)
+        await cg.register_parented(display_led_var, config[CONF_ID])
+        cg.add(var.set_display_led(display_led_var))
