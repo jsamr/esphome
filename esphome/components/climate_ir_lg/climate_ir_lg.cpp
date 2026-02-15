@@ -263,6 +263,12 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
   if ((remote_state & 0xFF00000) != LG_HEADER)
     return false;
 
+  // Ignore loopback from our own transmissions
+  if (remote_state == this->last_transmit_) {
+    this->last_transmit_ = 0;
+    return true;
+  }
+
   // Decode commands
   switch (remote_state & COMMAND_HEADER_MASK) {
     case CommandSys::HEADER_SYS:
@@ -420,6 +426,7 @@ void LgIrClimate::sync_display_led_() {
 
 void LgIrClimate::transmit_(uint32_t value) {
   this->calc_checksum_(value);
+  this->last_transmit_ = value;
   ESP_LOGD(TAG, "Sending climate_lg_ir code: 0x%02" PRIX32, value);
 
   auto transmit = this->transmitter_->transmit();

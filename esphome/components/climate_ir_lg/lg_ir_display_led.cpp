@@ -26,7 +26,6 @@ void LgIrDisplayLed::write_state(light::LightState *state) {
 
   if (new_state != this->assumed_state_) {
     this->assumed_state_ = new_state;
-    this->last_received_ = millis();
     this->parent_->send_display_led_toggle();
   }
 }
@@ -34,10 +33,6 @@ void LgIrDisplayLed::write_state(light::LightState *state) {
 void LgIrDisplayLed::on_receive_display_led_toggle() {
   if (this->state_ == nullptr)
     return;
-  // Debounce in RX+TX setups
-  if (millis() - this->last_received_ < MIN_RECEIVE_DURATION_MS)
-    return;
-  this->last_received_ = millis();
   this->set_assumed_state(!this->assumed_state_);
 }
 

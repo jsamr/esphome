@@ -20,7 +20,6 @@ class LgIrDisplayLed : public light::LightOutput, public Parented<LgIrClimate> {
 
  protected:
   light::LightState *state_{nullptr};
-  uint32_t last_received_{0};
   bool assumed_state_{false};
   bool receiving_{false};
 };

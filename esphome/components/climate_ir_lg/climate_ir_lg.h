@@ -73,6 +73,7 @@ class LgIrClimate : public climate_ir::ClimateIR {
 
   climate::ClimateMode mode_before_{climate::CLIMATE_MODE_OFF};
   LgIrDisplayLed *display_led_{nullptr};
+  uint32_t last_transmit_{0};
 };
 
 }  // namespace climate_ir_lg
