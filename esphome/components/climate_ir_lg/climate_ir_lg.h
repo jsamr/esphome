@@ -4,6 +4,8 @@
 
 #include <cinttypes>
 
+#include "esphome/components/select/select.h"
+
 namespace esphome {
 namespace climate_ir_lg {
 
@@ -19,6 +21,8 @@ class LgIrClimate : public climate_ir::ClimateIR {
                                climate::CLIMATE_FAN_HIGH},
                               {climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL}) {}
 
+  void setup() override;
+
   /// Override control to change settings of the climate device.
   void control(const climate::ClimateCall &call) override {
     this->send_swing_cmd_ = call.get_swing_mode().has_value();
@@ -33,6 +37,11 @@ class LgIrClimate : public climate_ir::ClimateIR {
   void set_bit_high(uint32_t bit_high) { this->bit_high_ = bit_high; }
   void set_bit_one_low(uint32_t bit_one_low) { this->bit_one_low_ = bit_one_low; }
   void set_bit_zero_low(uint32_t bit_zero_low) { this->bit_zero_low_ = bit_zero_low; }
+
+  /// Send a fixed vertical louver position (index 0-5, mapping to VERT_FIX_1 through VERT_FIX_6).
+  void send_louver_fixed_vertical_position(size_t index);
+
+  SUB_SELECT(louver_fixed_vertical_position)
 
  protected:
   /// Transmit via IR the state of this climate controller.

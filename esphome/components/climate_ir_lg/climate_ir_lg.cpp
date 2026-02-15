@@ -113,6 +113,29 @@ const uint32_t TEMP_SHIFT = 8;
 
 const uint16_t BITS = 28;
 
+// Default fixed position index (0-indexed, so 2 = Position 3)
+const size_t DEFAULT_FIX_INDEX = 2;
+
+void LgIrClimate::setup() {
+  climate_ir::ClimateIR::setup();
+  if (this->louver_fixed_vertical_position_select_ != nullptr) {
+    this->louver_fixed_vertical_position_select_->publish_state(DEFAULT_FIX_INDEX);
+  }
+}
+
+void LgIrClimate::send_louver_fixed_vertical_position(size_t index) {
+  if (index >= 6)
+    return;
+  uint32_t remote_state = LG_HEADER;
+  remote_state |= CommandAdvSwing::HEADER_ADV_SWING;
+  // To convert index to LG command, we multiply index (0...5) by 16 and sum the result to
+  // the lowest position code.
+  remote_state |= (static_cast<uint32_t>(index) << 4) + CommandAdvSwing::VERT_FIX_1;
+  this->transmit_(remote_state);
+  this->swing_mode = climate::CLIMATE_SWING_OFF;
+  this->publish_state();
+}
+
 void LgIrClimate::transmit_state() {
   uint32_t remote_state = LG_HEADER;
 
@@ -131,7 +154,7 @@ void LgIrClimate::transmit_state() {
         case climate::CLIMATE_SWING_OFF:
           ESP_LOGD(TAG, "setting swing off");
           remote_state |= CommandAdvSwing::HEADER_ADV_SWING;
-          remote_state |= CommandAdvSwing::VERT_FIX_3;
+          remote_state |= CommandAdvSwing::VERT_SWING_OFF;
           break;
         default:
           return;
@@ -251,14 +274,22 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
           this->swing_mode = climate::CLIMATE_SWING_VERTICAL;
           break;
         case CommandAdvSwing::VERT_SWING_OFF:
+          this->swing_mode = climate::CLIMATE_SWING_OFF;
+          break;
         case CommandAdvSwing::VERT_FIX_1:
         case CommandAdvSwing::VERT_FIX_2:
         case CommandAdvSwing::VERT_FIX_3:
         case CommandAdvSwing::VERT_FIX_4:
         case CommandAdvSwing::VERT_FIX_5:
-        case CommandAdvSwing::VERT_FIX_6:
+        case CommandAdvSwing::VERT_FIX_6: {
           this->swing_mode = climate::CLIMATE_SWING_OFF;
+          if (this->louver_fixed_vertical_position_select_ != nullptr) {
+            uint32_t adv_data = remote_state & CommandAdvSwing::ADV_SWING_DATA_MASK;
+            size_t fix_index = (adv_data - CommandAdvSwing::VERT_FIX_1) >> 4;
+            this->louver_fixed_vertical_position_select_->publish_state(fix_index);
+          }
           break;
+        }
         default:
           return false;  // Ignore all other (horizontal) swing commands
       }
