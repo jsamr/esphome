@@ -61,6 +61,8 @@ class LgIrClimate : public climate_ir::ClimateIR {
   void calc_checksum_(uint32_t &value);
   void transmit_(uint32_t value);
   void sync_display_led_();
+  /// Sync the display LED state and publish the climate state.
+  void publish_state_();
 
   bool alternative_mode_{false};
   uint32_t header_high_;

@@ -142,7 +142,7 @@ void LgIrClimate::send_louver_fixed_vertical_position(size_t index) {
   remote_state |= (static_cast<uint32_t>(index) << 4) + CommandAdvSwing::VERT_FIX_1;
   this->transmit_(remote_state);
   this->swing_mode = climate::CLIMATE_SWING_OFF;
-  this->publish_state();
+  this->publish_state_();
 }
 
 void LgIrClimate::transmit_state() {
@@ -169,7 +169,7 @@ void LgIrClimate::transmit_state() {
           return;
       }
       this->transmit_(remote_state);
-      this->publish_state();
+      this->publish_state_();
       return;
     } else {  // not alternative_mode, so just toggle swing
       remote_state |= HEADER_BASIC;
@@ -237,8 +237,7 @@ void LgIrClimate::transmit_state() {
   }
 
   this->transmit_(remote_state);
-  this->sync_display_led_();
-  this->publish_state();
+  this->publish_state_();
 }
 
 bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
@@ -309,7 +308,7 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
           return false;  // Ignore all other (horizontal) swing commands
       }
 
-      this->publish_state();
+      this->publish_state_();
       return true;
 
     case HEADER_BASIC:
@@ -323,7 +322,7 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
             this->fan_mode = climate::CLIMATE_FAN_HIGH;
             // When enabling PO mode swing is set to VERT_3, but after 30 mins it will switch back to what it was before
             // So let's just not change it here it at all
-            this->publish_state();
+            this->publish_state_();
             return true;
           default:
             ESP_LOGD(TAG, "Got jet command, but current mode does not support it! Ignoring.");
@@ -401,10 +400,14 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
       break;
   }
 
-  this->sync_display_led_();
-  this->publish_state();
+  this->publish_state_();
 
   return true;
+}
+
+void LgIrClimate::publish_state_() {
+  this->sync_display_led_();
+  this->publish_state();
 }
 
 void LgIrClimate::sync_display_led_() {
