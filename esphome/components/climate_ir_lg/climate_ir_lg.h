@@ -32,6 +32,7 @@ class LgIrClimate : public climate_ir::ClimateIR {
     if (call.get_mode().has_value() && *call.get_mode() == climate::CLIMATE_MODE_OFF && !(this->alternative_mode_))
       this->swing_mode = climate::CLIMATE_SWING_OFF;
     climate_ir::ClimateIR::control(call);
+    this->sync_display_led_();
   }
   void set_alternative_mode(bool value) { this->alternative_mode_ = value; }
   void set_header_high(uint32_t header_high) { this->header_high_ = header_high; }

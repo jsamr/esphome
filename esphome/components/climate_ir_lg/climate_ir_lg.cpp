@@ -169,7 +169,6 @@ void LgIrClimate::transmit_state() {
           return;
       }
       this->transmit_(remote_state);
-      this->publish_state_();
       return;
     } else {  // not alternative_mode, so just toggle swing
       remote_state |= HEADER_BASIC;
@@ -237,7 +236,6 @@ void LgIrClimate::transmit_state() {
   }
 
   this->transmit_(remote_state);
-  this->publish_state_();
 }
 
 bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
