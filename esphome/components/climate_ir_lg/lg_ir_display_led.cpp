@@ -5,8 +5,6 @@
 namespace esphome {
 namespace climate_ir_lg {
 
-static const uint32_t MIN_RECEIVE_DURATION_MS = 250;
-
 light::LightTraits LgIrDisplayLed::get_traits() {
   auto traits = light::LightTraits();
   traits.set_supported_color_modes({light::ColorMode::ON_OFF});
