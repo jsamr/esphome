@@ -178,19 +178,19 @@ void LgIrClimate::transmit_state() {
     const bool climate_is_off = (this->mode_before_ == climate::CLIMATE_MODE_OFF);
     switch (this->mode) {
       case climate::CLIMATE_MODE_COOL:
-        remote_state |= climate_is_off ? COMMAND_ON_COOL : COMMAND_COOL;
+        remote_state |= COMMAND_ON_COOL;
         break;
       case climate::CLIMATE_MODE_DRY:
-        remote_state |= climate_is_off ? COMMAND_ON_DRY : COMMAND_DRY;
+        remote_state |= COMMAND_ON_DRY;
         break;
       case climate::CLIMATE_MODE_FAN_ONLY:
-        remote_state |= climate_is_off ? COMMAND_ON_FAN_ONLY : COMMAND_FAN_ONLY;
+        remote_state |= COMMAND_ON_FAN_ONLY;
         break;
       case climate::CLIMATE_MODE_HEAT_COOL:
-        remote_state |= climate_is_off ? COMMAND_ON_AI : COMMAND_AI;
+        remote_state |= COMMAND_ON_AI;
         break;
       case climate::CLIMATE_MODE_HEAT:
-        remote_state |= climate_is_off ? COMMAND_ON_HEAT : COMMAND_HEAT;
+        remote_state |= COMMAND_ON_HEAT;
         break;
       case climate::CLIMATE_MODE_OFF:
       default:
